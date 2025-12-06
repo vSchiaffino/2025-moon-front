@@ -39,7 +39,10 @@ import { CustomTable } from '@/components/CustomTable'
 import { CustomDialog } from '@/components/CustomDialog'
 import { Label } from '@/components/ui/label'
 import { MultiSelect } from '@/components/MultiSelect'
-import { getSpareParts, create as createSparePart } from '@/services/spare-parts'
+import {
+  getSpareParts,
+  create as createSparePart,
+} from '@/services/spare-parts'
 
 export function Services() {
   const [isOpen, setIsOpen] = useState(false)
@@ -165,15 +168,18 @@ export function Services() {
         .filter((sp) => typeof sp.id === 'number')
         .map((sp) => ({
           quantity:
-            base?.spareParts.find((s) => s.sparePartId === sp.id)?.quantity || 1,
+            base?.spareParts.find((s) => s.sparePartId === sp.id)?.quantity ||
+            1,
           sparePartId: Number(sp.id),
         }))
 
-      const isSameLength = (base.spareParts?.length || 0) === nextSpareParts.length
+      const isSameLength =
+        (base.spareParts?.length || 0) === nextSpareParts.length
       const isSameValues = isSameLength
-        ? base.spareParts.every((s, i) =>
-            s.sparePartId === nextSpareParts[i].sparePartId &&
-            s.quantity === nextSpareParts[i].quantity
+        ? base.spareParts.every(
+            (s, i) =>
+              s.sparePartId === nextSpareParts[i].sparePartId &&
+              s.quantity === nextSpareParts[i].quantity
           )
         : false
 
@@ -247,7 +253,10 @@ export function Services() {
                 hasInput={true}
                 placeholder='Selecciona repuestos'
                 onCreate={async (value) => {
-                  const created = (await createSparePart({ name: value, stock: 0 })) as SparePartData
+                  const created = (await createSparePart({
+                    name: value,
+                    stock: 0,
+                  })) as SparePartData
                   if (!created || typeof created.id !== 'number') return
                   setSpareParts((prev) => [...prev, created])
                   setSelectedSpareParts((prev) => [...prev, created])
