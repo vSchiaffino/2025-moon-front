@@ -11,6 +11,7 @@ import {
   Goal,
   Icon,
   Blocks,
+  TriangleRight,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { getNextAppointmentsOfUser } from '@/services/appointments'
@@ -123,6 +124,14 @@ export function Home() {
       href: '/services',
       gradient: 'from-emerald-50 to-emerald-100/50',
       iconColor: 'text-emerald-600',
+    },
+    {
+      title: 'Rampas',
+      description: 'Revisa tus rampas o agrega nuevas',
+      icon: TriangleRight,
+      href: '/ramps',
+      gradient: 'from-red-50 to-red-100/50',
+      iconColor: 'text-red-600',
     },
     {
       title: 'Dashboard',
