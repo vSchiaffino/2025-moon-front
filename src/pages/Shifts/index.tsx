@@ -48,7 +48,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ConfirmAppointmentDialog } from './ConfirmAppointment'
 import type { WorkItemDataDto } from '@/types/work-item.types'
 import { createWorkItem } from '@/services/work-item'

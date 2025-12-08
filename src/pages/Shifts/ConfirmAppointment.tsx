@@ -1,18 +1,11 @@
 import { CustomDialog } from '@/components/CustomDialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useRamps } from '@/hooks/ramp/use-ramps'
 import type { Shift } from '@/types/appointments.types'
 import type { WorkItemDataDto } from '@/types/work-item.types'
 import { useState } from 'react'
 import { ServicesBadgesField } from './ServicesBadgesField'
+import { SelectRamp } from '@/components/SelectRamp'
 
 export interface Props {
   isOpen: boolean
@@ -29,7 +22,6 @@ export const ConfirmAppointmentDialog = ({
   onConfirm,
   appointment,
 }: Props) => {
-  const { ramps } = useRamps({ page: 1, pageSize: 100 })
   const [workItem, setWorkItem] = useState<WorkItemDataDto>(defaultWorkItem)
   if (!appointment) return <></>
   return (
@@ -77,25 +69,12 @@ export const ConfirmAppointmentDialog = ({
         </div>
         <div className='space-y-2'>
           <Label htmlFor='state'>Rampa</Label>
-          <Select
-            value={
-              workItem.rampId === 0 ? undefined : workItem.rampId.toString()
+          <SelectRamp
+            value={workItem.rampId === 0 ? undefined : workItem.rampId}
+            setValue={(rampId: number) =>
+              setWorkItem({ ...workItem, rampId: rampId })
             }
-            onValueChange={(rampId: string) =>
-              setWorkItem({ ...workItem, rampId: Number(rampId) })
-            }
-          >
-            <SelectTrigger className='w-32 rounded-xl'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className='rounded-xl'>
-              {ramps?.data.map((ramp) => (
-                <SelectItem value={String(ramp.id || 0)}>
-                  {ramp.code}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         </div>
       </div>
     </CustomDialog>

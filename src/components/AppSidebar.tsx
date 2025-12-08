@@ -38,6 +38,7 @@ import {
   Star,
   Goal,
   TriangleRight,
+  Layers,
 } from 'lucide-react'
 
 import {
@@ -106,6 +107,12 @@ export const AppSidebar = ({ children }: { children?: React.ReactNode }) => {
       label: 'Turnos',
       userRole: [UserRoles.MECHANIC],
       icon: <Wrench className='size-4' />,
+    },
+    {
+      path: '/work-items',
+      label: 'Ordenes de trabajo',
+      userRole: [UserRoles.MECHANIC],
+      icon: <Layers className='size-4' />,
     },
     {
       path: '/user-dashboard',
