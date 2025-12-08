@@ -190,7 +190,6 @@ export function SpareParts() {
           await createEntry(entries)
           setIsDoingEntry(false)
           setEntryDisabled(false)
-          console.log('refetching')
           refetch()
         }}
         saveDisabled={entryDisabled}

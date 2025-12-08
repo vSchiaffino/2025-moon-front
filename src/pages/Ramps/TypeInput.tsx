@@ -35,7 +35,6 @@ export function AutocompleteSelect({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onFocus={() => setOpen(true)}
-          onSubmit={() => console.log('Hola')}
         />
       </PopoverTrigger>
       <PopoverContent className='w-[var(--radix-popover-trigger-width)] p-0'>

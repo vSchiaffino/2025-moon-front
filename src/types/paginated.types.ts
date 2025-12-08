@@ -1,9 +1,9 @@
 export interface PaginatedQueryDto {
   page: number
   pageSize: number
-  search: string
-  orderBy: string
-  orderDir: string
+  search?: string
+  orderBy?: string
+  orderDir?: string
 }
 
 export interface PaginatedResponseDto<T> {
