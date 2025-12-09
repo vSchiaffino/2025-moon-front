@@ -28,3 +28,11 @@ export const editWorkItem = (id: number, dto: ModifyWorkItemDto) => {
 export const changeWorkItemState = (id: number, state: WorkItemState) => {
   return put(`/work-items/${id}/state`, { state })
 }
+
+export const getMechanicHoursData = () => {
+  return get(`/work-items/dashboard/mechanic-hours`)
+}
+
+export const getServicesHoursData = () => {
+  return get(`/work-items/dashboard/services-hours`)
+}

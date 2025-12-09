@@ -30,6 +30,8 @@ import {
   Star,
   TrendingUp,
   TriangleRight,
+  User,
+  CircleDot,
 } from 'lucide-react'
 import type { Service, SparePartService } from '@/types/services.types'
 import type { Appointment } from '@/types/appointments.types'
@@ -39,6 +41,10 @@ import type { MechanicReview } from '@/types/users.types'
 import { toStars, getSubcategoryCounts, subLabel } from '@/helpers/reviews'
 import { ReviewEnum, SubCategroriesEnum } from '@/types/users.types'
 import { getRampsData } from '@/services/ramp'
+import {
+  getMechanicHoursData,
+  getServicesHoursData,
+} from '@/services/work-item'
 
 export const ServiceGrowthTooltip = ({
   active,
@@ -129,6 +135,83 @@ const RampsDataToolTip = ({
       <div className='space-y-1 text-sm'>
         <p className='text-muted-foreground'>
           Cantidad: <span className='font-medium text-foreground'>{value}</span>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+const ServicesHoursDataToolTip = ({
+  active,
+  payload,
+}: TooltipProps<number, string>) => {
+  if (!active || !payload || !payload.length) return null
+
+  type PayloadType = {
+    avgHours?: number
+    serviceName?: string
+    fill?: string
+    payload?: { serviceName?: string; fill?: string; avgHours?: number }
+  }
+
+  const data = payload[0] as unknown as PayloadType
+  const value = data.payload?.avgHours ?? 0
+  const title = data.payload?.serviceName
+  const color =
+    data.payload?.fill ?? data.fill ?? 'hsl(var(--muted-foreground))'
+
+  return (
+    <div className='bg-card/95 backdrop-blur-sm border border-border/50 rounded-2xl p-4 shadow-xl'>
+      <div className='flex items-center gap-2 mb-2'>
+        <div
+          className='w-3 h-3 rounded-full'
+          style={{ backgroundColor: color }}
+        />
+        <p className='font-semibold text-foreground'>{title}</p>
+      </div>
+      <div className='space-y-1 text-sm'>
+        <p className='text-muted-foreground'>
+          Horas promedio:{' '}
+          <span className='font-medium text-foreground'>
+            {value.toFixed(2)}
+          </span>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+const MechanicHoursDataToolTip = ({
+  active,
+  payload,
+}: TooltipProps<number, string>) => {
+  if (!active || !payload || !payload.length) return null
+
+  type PayloadType = {
+    hours?: number
+    mechanicName?: string
+    fill?: string
+    payload?: { mechanicName?: string; fill?: string; hours?: number }
+  }
+
+  const data = payload[0] as unknown as PayloadType
+  const value = data.payload?.hours ?? 0
+  const title = data.payload?.mechanicName
+  const color =
+    data.payload?.fill ?? data.fill ?? 'hsl(var(--muted-foreground))'
+
+  return (
+    <div className='bg-card/95 backdrop-blur-sm border border-border/50 rounded-2xl p-4 shadow-xl'>
+      <div className='flex items-center gap-2 mb-2'>
+        <div
+          className='w-3 h-3 rounded-full'
+          style={{ backgroundColor: color }}
+        />
+        <p className='font-semibold text-foreground'>{title}</p>
+      </div>
+      <div className='space-y-1 text-sm'>
+        <p className='text-muted-foreground'>
+          Horas: <span className='font-medium text-foreground'>{value}</span>
         </p>
       </div>
     </div>
@@ -227,6 +310,8 @@ type DashboardSection =
   | 'growth'
   | 'trends'
   | 'ramps'
+  | 'mechanicHours'
+  | 'servicesHours'
 
 export const MechanicDashboard = () => {
   const { user } = useStore()
@@ -246,6 +331,8 @@ export const MechanicDashboard = () => {
       'growth',
       'trends',
       'ramps',
+      'mechanicHours',
+      'servicesHours',
     ])
   )
   const [serviceGrowth, setServiceGrowth] = useState<
@@ -254,6 +341,18 @@ export const MechanicDashboard = () => {
       growth: number
       currentCount: number
       previousCount: number
+    }[]
+  >([])
+  const [mechanicHoursData, setMechanicHoursData] = useState<
+    {
+      mechanicName: string
+      quantity: number
+    }[]
+  >([])
+  const [servicesHoursData, setServicesHoursData] = useState<
+    {
+      serviceName: string
+      avgHours: number
     }[]
   >([])
   const [rampsData, setRampsData] = useState<
@@ -316,6 +415,30 @@ export const MechanicDashboard = () => {
     }
     fetchAppointmentTrends()
   }, [timeRange])
+
+  useEffect(() => {
+    const fetchMechanicsHoursData = async () => {
+      try {
+        const data = await getMechanicHoursData()
+        setMechanicHoursData(data)
+      } catch (error) {
+        console.error('Error fetching ramps data:', error)
+      }
+    }
+    fetchMechanicsHoursData()
+  }, [])
+
+  useEffect(() => {
+    const fetchServicesHoursData = async () => {
+      try {
+        const data = await getServicesHoursData()
+        setServicesHoursData(data)
+      } catch (error) {
+        console.error('Error fetching ramps data:', error)
+      }
+    }
+    fetchServicesHoursData()
+  }, [])
 
   useEffect(() => {
     const fetchRampsData = async () => {
@@ -504,6 +627,18 @@ export const MechanicDashboard = () => {
       label: 'Rampas más utilizadas',
       icon: TriangleRight,
       color: 'violet',
+    },
+    {
+      id: 'mechanicHours' as DashboardSection,
+      label: 'Mecanicos con mas carga horaria',
+      icon: User,
+      color: 'emerald',
+    },
+    {
+      id: 'servicesHours' as DashboardSection,
+      label: 'Servicios y su promedio de tiempo de trabajo',
+      icon: CircleDot,
+      color: 'lime',
     },
     {
       id: 'trends' as DashboardSection,
@@ -1253,7 +1388,197 @@ export const MechanicDashboard = () => {
                     animationEasing='ease-out'
                     name='Cantidad de ordenes de trabajo'
                   >
-                    {serviceGrowth.map((_, index) => (
+                    {rampsData.map((_, index) => (
+                      <Cell
+                        key={`growth-bar-cell-${index}`}
+                        fill={`url(#growthBarGradient-${
+                          index % COLORS.length
+                        })`}
+                        className='hover:opacity-80 transition-opacity shadow-md'
+                        stroke='none'
+                        strokeWidth={0}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className='flex items-center justify-center h-[300px] text-muted-foreground'>
+                No hay datos de rampas disponibles
+              </div>
+            )}
+          </div>
+        )}
+        {visibleSections.has('mechanicHours') && (
+          <div className='bg-card rounded-3xl p-6 shadow-sm border border-border/50 animate-in fade-in slide-in-from-bottom-4 duration-500'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='p-3 bg-emerald-500/10 rounded-2xl'>
+                <User className='h-5 w-5 text-emerald-600 dark:text-emerald-400' />
+              </div>
+              <div>
+                <h2 className='text-lg font-semibold text-foreground'>
+                  Mecanicos con mas carga horaria
+                </h2>
+                <p className='text-sm text-muted-foreground'>
+                  Comparación de mecánicos con mas horas de trabajo registradas
+                </p>
+              </div>
+            </div>
+
+            {mechanicHoursData.length > 0 ? (
+              <ResponsiveContainer width='100%' height={320}>
+                <BarChart
+                  data={mechanicHoursData}
+                  margin={{ top: 20, right: 20, bottom: 60, left: 20 }}
+                >
+                  <defs>
+                    {COLORS.map((color, index) => (
+                      <linearGradient
+                        key={`growth-gradient-${index}`}
+                        id={`growthBarGradient-${index}`}
+                        x1='0'
+                        y1='0'
+                        x2='0'
+                        y2='1'
+                      >
+                        <stop offset='0%' stopColor={color} stopOpacity={0.9} />
+                        <stop
+                          offset='100%'
+                          stopColor={color}
+                          stopOpacity={0.6}
+                        />
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray='3 3'
+                    stroke='hsl(var(--border))'
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey='mechanicName'
+                    angle={-45}
+                    textAnchor='end'
+                    height={80}
+                    tick={{
+                      fill: 'hsl(var(--muted-foreground))',
+                      fontSize: 11,
+                    }}
+                    className='fill-foreground'
+                  />
+                  <YAxis
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    stroke='hsl(var(--border))'
+                    className='fill-foreground'
+                  />
+                  <Tooltip
+                    content={<MechanicHoursDataToolTip />}
+                    cursor={{ fill: 'hsl(var(--accent))', opacity: 0.1 }}
+                  />
+                  <Bar
+                    dataKey='hours'
+                    radius={[12, 12, 0, 0]}
+                    animationBegin={0}
+                    animationDuration={800}
+                    animationEasing='ease-out'
+                    name='Cantidad de horas registradas'
+                  >
+                    {mechanicHoursData.map((_, index) => (
+                      <Cell
+                        key={`growth-bar-cell-${index}`}
+                        fill={`url(#growthBarGradient-${
+                          index % COLORS.length
+                        })`}
+                        className='hover:opacity-80 transition-opacity shadow-md'
+                        stroke='none'
+                        strokeWidth={0}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className='flex items-center justify-center h-[300px] text-muted-foreground'>
+                No hay datos de rampas disponibles
+              </div>
+            )}
+          </div>
+        )}
+        {visibleSections.has('servicesHours') && (
+          <div className='bg-card rounded-3xl p-6 shadow-sm border border-border/50 animate-in fade-in slide-in-from-bottom-4 duration-500'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='p-3 bg-lime-500/10 rounded-2xl'>
+                <User className='h-5 w-5 text-lime-600 dark:text-lime-400' />
+              </div>
+              <div>
+                <h2 className='text-lg font-semibold text-foreground'>
+                  Servicios y su tiempo de atencion promedio
+                </h2>
+                <p className='text-sm text-muted-foreground'>
+                  Comparación de los servicios y el tiempo de atencion promedio
+                </p>
+              </div>
+            </div>
+
+            {servicesHoursData.length > 0 ? (
+              <ResponsiveContainer width='100%' height={320}>
+                <BarChart
+                  data={servicesHoursData}
+                  margin={{ top: 20, right: 20, bottom: 60, left: 20 }}
+                >
+                  <defs>
+                    {COLORS.map((color, index) => (
+                      <linearGradient
+                        key={`growth-gradient-${index}`}
+                        id={`growthBarGradient-${index}`}
+                        x1='0'
+                        y1='0'
+                        x2='0'
+                        y2='1'
+                      >
+                        <stop offset='0%' stopColor={color} stopOpacity={0.9} />
+                        <stop
+                          offset='100%'
+                          stopColor={color}
+                          stopOpacity={0.6}
+                        />
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray='3 3'
+                    stroke='hsl(var(--border))'
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey='serviceName'
+                    angle={-45}
+                    textAnchor='end'
+                    height={80}
+                    tick={{
+                      fill: 'hsl(var(--muted-foreground))',
+                      fontSize: 11,
+                    }}
+                    className='fill-foreground'
+                  />
+                  <YAxis
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    stroke='hsl(var(--border))'
+                    className='fill-foreground'
+                  />
+                  <Tooltip
+                    content={<ServicesHoursDataToolTip />}
+                    cursor={{ fill: 'hsl(var(--accent))', opacity: 0.1 }}
+                  />
+                  <Bar
+                    dataKey='avgHours'
+                    radius={[12, 12, 0, 0]}
+                    animationBegin={0}
+                    animationDuration={800}
+                    animationEasing='ease-out'
+                    name='Cantidad de horas promedio'
+                  >
+                    {servicesHoursData.map((_, index) => (
                       <Cell
                         key={`growth-bar-cell-${index}`}
                         fill={`url(#growthBarGradient-${
