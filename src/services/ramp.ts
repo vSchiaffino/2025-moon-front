@@ -23,3 +23,7 @@ export const getRamps = (query: PaginatedQueryDto, states?: RampState[]) => {
 export const deleteRamp = (id: number) => {
   return del(`/ramps/${id}`)
 }
+
+export const getRampsData = () => {
+  return get('/ramps/dashboard')
+}
