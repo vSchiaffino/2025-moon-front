@@ -10,8 +10,11 @@ export const createWorkItem = (dto: CreateWorkItemDto) => {
   return post('/work-items', dto)
 }
 
-export const getWorkItems = (query: PaginatedQueryDto) => {
-  return get('/work-items', { params: query })
+export const getWorkItems = (
+  query: PaginatedQueryDto,
+  states: WorkItemState[]
+) => {
+  return get('/work-items', { params: { ...query, states: states.join(',') } })
 }
 
 export const getWorkItemDetail = (id: number) => {

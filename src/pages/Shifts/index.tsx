@@ -205,6 +205,7 @@ export function Shifts() {
                   <SelectItem value='all'>TODAS</SelectItem>
                   {Object.values([
                     'PENDING',
+                    'CONFIRMED',
                     'IN_SERVICE',
                     'SERVICE_COMPLETED',
                     'COMPLETED',

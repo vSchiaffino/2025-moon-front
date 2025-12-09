@@ -14,6 +14,7 @@ export interface CreateWorkItemDto {
 
 export interface WorkItem {
   id: number
+  realWorkTimeMs?: number
   state: WorkItemState
   mechanicName: string
   ramp: Ramp
@@ -33,6 +34,14 @@ export enum WorkItemState {
   PAUSED = 'paused',
   DONE = 'done',
   CANCELLED = 'cancelled',
+}
+
+export const workItemStateToLabel: Record<WorkItemState, string> = {
+  [WorkItemState.PENDING]: 'Pendiente',
+  [WorkItemState.WORKING]: 'En ejecución',
+  [WorkItemState.PAUSED]: 'Pausada',
+  [WorkItemState.CANCELLED]: 'Cancelada',
+  [WorkItemState.DONE]: 'Finalizada',
 }
 
 export interface ModifyWorkItemDto {

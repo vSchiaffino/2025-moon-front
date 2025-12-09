@@ -1,6 +1,5 @@
 import { Container } from '@/components/Container'
 import { useState } from 'react'
-import { type DateFilter, AppointmentStatus } from '@/types/appointments.types'
 import {
   Calendar,
   Search,
@@ -10,27 +9,25 @@ import {
   Binary,
 } from 'lucide-react'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { appointmentStatusToLabel } from '@/helpers/appointment-status'
 import { CustomTable } from '@/components/CustomTable'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { WorkItemStateBadge } from './WorkItemStateBadge'
 import { useWorkItems } from '@/hooks/work-items/use-work-items'
 import type { PaginatedQueryDto } from '@/types/paginated.types'
-import type { WorkItem } from '@/types/work-item.types'
+import { type WorkItem, WorkItemState } from '@/types/work-item.types'
 import { EditWorkItemDialog } from './EditWorkItemDialog'
+import { StateMultiSelect } from './StateMultiSelect'
 
 export function WorkItems() {
   const [selectedWorkItem, setSelectedWorkItem] = useState<WorkItem | null>(
     null
   )
+  const [states, setStates] = useState<WorkItemState[]>([
+    WorkItemState.PAUSED,
+    WorkItemState.PENDING,
+    WorkItemState.WORKING,
+  ])
   const [pagination, setPagination] = useState<PaginatedQueryDto>({
     orderBy: 'id',
     orderDir: 'DESC',
@@ -38,13 +35,9 @@ export function WorkItems() {
     pageSize: 10,
     search: '',
   })
-  const { workItems, refetch } = useWorkItems(pagination)
+  const { workItems, refetch } = useWorkItems(pagination, states)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [dateFilter, setDateFilter] = useState<DateFilter | 'all'>('today')
-  const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'all'>(
-    'PENDING' as AppointmentStatus
-  )
   const itemsPerPage = 10
   const totalPages = Math.ceil((workItems?.total || 0) / itemsPerPage)
 
@@ -52,6 +45,9 @@ export function WorkItems() {
     <Container>
       {selectedWorkItem && (
         <EditWorkItemDialog
+          refetchWorkitems={async () => {
+            await refetch()
+          }}
           onSave={async () => {
             setSelectedWorkItem(null)
             await refetch()
@@ -100,53 +96,9 @@ export function WorkItems() {
 
           <div className='flex flex-wrap items-center gap-3 p-3'>
             <span className='text-xs text-muted-foreground'>Filtros:</span>
-            <div className='flex items-center gap-2'>
-              <Label className='text-xs text-muted-foreground'>Fecha</Label>
-              <Select
-                value={dateFilter}
-                onValueChange={(value) => {
-                  setDateFilter(value as DateFilter | 'all')
-                  setCurrentPage(1)
-                }}
-              >
-                <SelectTrigger className='h-9 rounded-xl'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className='rounded-xl'>
-                  <SelectItem value='all'>TODAS</SelectItem>
-                  <SelectItem value='past'>PASADOS</SelectItem>
-                  <SelectItem value='today'>HOY</SelectItem>
-                  <SelectItem value='future'>FUTUROS</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2 h-4 my-2'>
               <Label className='text-xs text-muted-foreground'>Estado</Label>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) => {
-                  setStatusFilter(value as AppointmentStatus | 'all')
-                  setCurrentPage(1)
-                }}
-              >
-                <SelectTrigger className='h-9 rounded-xl'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className='rounded-xl'>
-                  <SelectItem value='all'>TODAS</SelectItem>
-                  {Object.values([
-                    'PENDING',
-                    'IN_SERVICE',
-                    'SERVICE_COMPLETED',
-                    'COMPLETED',
-                    'CANCELLED',
-                  ]).map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {appointmentStatusToLabel[status as AppointmentStatus]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <StateMultiSelect value={states} setValue={setStates} />
             </div>
           </div>
 

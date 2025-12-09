@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge'
-import { WorkItemState } from '@/types/work-item.types'
+import { WorkItemState, workItemStateToLabel } from '@/types/work-item.types'
 
 type VariantType =
   | 'default'
@@ -11,13 +11,6 @@ type VariantType =
   | 'purple'
 
 export const WorkItemStateBadge = ({ state }: { state: WorkItemState }) => {
-  const stateToLabel: Record<WorkItemState, string> = {
-    [WorkItemState.PENDING]: 'Pendiente',
-    [WorkItemState.WORKING]: 'En ejecución',
-    [WorkItemState.PAUSED]: 'Pausada',
-    [WorkItemState.CANCELLED]: 'Cancelada',
-    [WorkItemState.DONE]: 'Finalizada',
-  }
   const stateToBadgeVariant: Record<WorkItemState, VariantType> = {
     [WorkItemState.PENDING]: 'secondary',
     [WorkItemState.WORKING]: 'outline',
@@ -25,7 +18,7 @@ export const WorkItemStateBadge = ({ state }: { state: WorkItemState }) => {
     [WorkItemState.CANCELLED]: 'destructive',
     [WorkItemState.DONE]: 'success',
   }
-  const label = stateToLabel[state]
+  const label = workItemStateToLabel[state]
   const variant = stateToBadgeVariant[state]
   return <Badge variant={variant}>{label}</Badge>
 }

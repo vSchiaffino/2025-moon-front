@@ -1,4 +1,3 @@
-import { RampState } from '@/types/ramp.types'
 import {
   Select,
   SelectContent,
@@ -12,10 +11,10 @@ export const SelectRamp = ({
   value,
   setValue,
 }: {
-  value?: number
+  value: number
   setValue: (value: number) => void
 }) => {
-  const { ramps } = useRamps({ page: 1, pageSize: 100 }, [RampState.FREE])
+  const { ramps } = useRamps({ page: 1, pageSize: 100 })
   return (
     <Select
       value={value?.toString() || ''}
@@ -26,7 +25,9 @@ export const SelectRamp = ({
       </SelectTrigger>
       <SelectContent className='rounded-xl'>
         {ramps?.data.map((ramp) => (
-          <SelectItem value={String(ramp.id || 0)}>{ramp.code}</SelectItem>
+          <SelectItem disabled={ramp.state !== 'free'} value={String(ramp.id)}>
+            {ramp.code}
+          </SelectItem>
         ))}
       </SelectContent>
     </Select>

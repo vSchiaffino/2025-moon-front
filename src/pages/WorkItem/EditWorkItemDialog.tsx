@@ -28,22 +28,25 @@ export interface EditWorkItemProps {
   setWorkItem: React.Dispatch<React.SetStateAction<WorkItem | null>>
   onClose: () => void
   onSave: () => Promise<void>
+  refetchWorkitems: () => Promise<void>
 }
 
 export const EditWorkItemDialog = ({
   workItemId,
   onClose,
   onSave,
+  refetchWorkitems,
 }: EditWorkItemProps) => {
-  const { workItem, refetch } = useWorkItemDetail(workItemId, (detail) =>
-    setDto({ mechanic: detail.mechanicName, rampId: detail.ramp.id || 0 })
-  )
+  const [dto, setDto] = useState<ModifyWorkItemDto>({ mechanic: '', rampId: 0 })
+  const { workItem, refetch } = useWorkItemDetail(workItemId, (detail) => {
+    setDto({ mechanic: detail.mechanicName, rampId: detail.ramp.id as number })
+  })
   const onStateChange = async (state: WorkItemState) => {
     if (!workItemId) return
     await changeWorkItemState(workItemId, state)
     await refetch()
+    await refetchWorkitems()
   }
-  const [dto, setDto] = useState<ModifyWorkItemDto>({ mechanic: '', rampId: 0 })
   if (!workItem) return <></>
   return (
     <CustomDialog
@@ -75,6 +78,17 @@ export const EditWorkItemDialog = ({
             className='rounded-xl'
           />
         </div>
+        {workItem.realWorkTimeMs && (
+          <div className='space-y-2'>
+            <Label htmlFor='time'>Tiempo de trabajo real (minutos)</Label>
+            <Input
+              id='time'
+              disabled
+              value={Math.floor(workItem.realWorkTimeMs / (60 * 1000))}
+              className='rounded-xl'
+            />
+          </div>
+        )}
         <div className='space-y-2'>
           <Label htmlFor='name'>Mecánico asignado</Label>
           <Input
